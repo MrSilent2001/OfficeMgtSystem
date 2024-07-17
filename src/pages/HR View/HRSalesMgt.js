@@ -1,10 +1,10 @@
 import React, {useState} from 'react';
-import "./styleSheets/adminDashboard.css";
-import '../App.css';
-import Header from "../components/header";
-import Sidebar from "../components/sidebar";
+import "../styleSheets/adminDashboard.css";
+import '../../App.css';
+import Header from "../../components/header";
+import Sidebar from "../../components/sidebar";
 
-const EmployeeHandling = () => {
+const SalesMgt = () => {
     const [openSidebarToggle, setOpenSidebarToggle] = useState(false);
 
     const OpenSidebar = () => {
@@ -17,11 +17,12 @@ const EmployeeHandling = () => {
             <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}/>
             <main className='main-container'>
                 <div className='main-title'>
-                    <h1>EmployeeHandling</h1>
+                    <h1>HR Sales Mgt</h1>
                 </div>
             </main>
         </div>
+
     );
 };
 
-export default EmployeeHandling;
+export default SalesMgt;

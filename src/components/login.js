@@ -1,27 +1,4 @@
 import styled from "styled-components";
-// const show = keyframes`
-//   0%, 49.99% {
-// 		opacity: 0;
-// 		z-index: 1;
-// 	}
-
-// 	50%, 100% {
-// 		opacity: 1;
-// 		z-index: 5;
-// 	}
-// `;
-
-// const hide = keyframes`
-//   0%, 49.99% {
-//     opacity: 1;
-//     z-index: 5;
-//   }
-
-//   50%, 100% {
-//     opacity: 0;
-//     z-index: 1;
-//   }
-// `
 
 export const Container = styled.div`
   background-color: #fff;
@@ -86,6 +63,15 @@ export const Input = styled.input`
   padding: 12px 15px;
   margin: 8px 0;
   width: 400px;
+`;
+
+export const Select = styled.select`
+  background-color: #eee;
+  border: 1px solid #9e9ea4;
+  padding: 12px 15px;
+  margin: 8px 0;
+  width: 400px;
+  font-size: 14px;
 `;
 
 export const Button = styled.button`

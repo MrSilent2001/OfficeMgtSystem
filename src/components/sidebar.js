@@ -1,47 +1,82 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
 import '../App.css';
-import {BsPeopleFill} from 'react-icons/bs';
-import {useNavigate} from "react-router-dom";
+import { BsPeopleFill } from 'react-icons/bs';
+import { useNavigate } from "react-router-dom";
 
-function Sidebar({openSidebarToggle, OpenSidebar }) {
+function Sidebar({ openSidebarToggle, OpenSidebar }) {
     const navigate = useNavigate();
+    const [userRole, setUserRole] = useState('');
+
+    useEffect(() => {
+        // Fetch user role from an API or local storage
+        const role = localStorage.getItem('role');
+        setUserRole(role);
+        console.log(userRole)
+    }, []);
 
     return (
-        <aside id="sidebar" className={openSidebarToggle ? "sidebar-responsive": ""}>
-            <div className='sidebar-title' onClick={()=> navigate('/admin-dashboard')} style={{cursor: 'pointer'}}>
+        <aside id="sidebar" className={openSidebarToggle ? "sidebar-responsive" : ""}>
+            <div className='sidebar-title' onClick={() => navigate('/admin-dashboard')} style={{ cursor: 'pointer' }}>
                 <div className='sidebar-brand'>
-                    <img  src='/Logo.png' alt='' className='icon_header'/> Ru Fashion
+                    <img src='/Logo.png' alt='' className='icon_header' /> Ru Fashion
                 </div>
                 <span className='icon close_icon' onClick={OpenSidebar}>X</span>
             </div>
 
             <ul className='sidebar-list'>
-                <li className='sidebar-list-item' onClick={()=>navigate('/employee-handling')}>
-                    <BsPeopleFill className='icon'/> Employee Handling
-                </li>
+                {userRole === 'Admin' && (
+                    <>
+                        <li className='sidebar-list-item' onClick={() => navigate('/accounts-handling')}>
+                            <BsPeopleFill className='icon'/> Account Handling
+                        </li>
+                        <li className='sidebar-list-item' onClick={() => navigate('/order-controlling')}>
+                            <BsPeopleFill className='icon'/> Order Management
+                        </li>
+                        <li className='sidebar-list-item' onClick={() => navigate('/sales-mgt')}>
+                            <BsPeopleFill className='icon'/> Sales Management
+                        </li>
+                        <li className='sidebar-list-item' onClick={() => navigate('/employee-mgt')}>
+                            <BsPeopleFill className='icon'/> Employee Management
+                        </li>
+                    </>
+                )}
 
-                <li className='sidebar-list-item' onClick={()=>navigate('/attendance-mgt')}>
-                    <BsPeopleFill className='icon'/> Attendance Management
-                </li>
+                {userRole === 'HRManager' && (
+                    <>
+                        <li className='sidebar-list-item' onClick={() => navigate('/hr-dashboard')}>
+                            <BsPeopleFill className='icon'/> Account Handling
+                        </li>
+                        <li className='sidebar-list-item' onClick={() => navigate('/hr-order-controlling')}>
+                            <BsPeopleFill className='icon'/> Order Controlling
+                        </li>
+                        <li className='sidebar-list-item' onClick={() => navigate('/hr-sales-mgt')}>
+                            <BsPeopleFill className='icon'/> Sales Management
+                        </li>
+                    </>
+                )}
 
-                <li className='sidebar-list-item' onClick={()=>navigate('/supplier-handling')}>
-                    <BsPeopleFill className='icon'/> Supplier Handling
-                </li>
-
-                <li className='sidebar-list-item' onClick={()=>navigate('/order-controlling')}>
-                        <BsPeopleFill className='icon'/> Order Controlling
-                </li>
-
-                <li className='sidebar-list-item' onClick={()=>navigate('/inventory-controlling')}>
-                        <BsPeopleFill className='icon'/> Inventory Controlling
-                </li>
-
-                <li className='sidebar-list-item' onClick={()=>navigate('/wage-mgt')}>
-                        <BsPeopleFill className='icon'/> Wage Management
-                </li>
+                {userRole === 'FinanceManager' && (
+                    <>
+                        <li className='sidebar-list-item' onClick={() => navigate('/finance-dashboard')}>
+                            <BsPeopleFill className='icon'/> Account Handling
+                        </li>
+                        <li className='sidebar-list-item' onClick={() => navigate('/finance-order-controlling')}>
+                            <BsPeopleFill className='icon'/> Order Management
+                        </li>
+                        <li className='sidebar-list-item' onClick={() => navigate('/finance-sales-mgt')}>
+                            <BsPeopleFill className='icon'/> Sales Management
+                        </li>
+                        <li className='sidebar-list-item' onClick={() => navigate('/finance-inventory-mgt')}>
+                            <BsPeopleFill className='icon'/> Inventory Management
+                        </li>
+                        <li className='sidebar-list-item' onClick={() => navigate('/finance-wage-mgt')}>
+                            <BsPeopleFill className='icon'/> Payment Management
+                        </li>
+                    </>
+                )}
             </ul>
         </aside>
-    )
+    );
 }
 
-export default Sidebar
+export default Sidebar;

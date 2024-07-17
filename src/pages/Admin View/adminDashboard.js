@@ -1,10 +1,11 @@
 import React, {useState} from 'react';
-import "./styleSheets/adminDashboard.css";
-import '../App.css';
-import Header from "../components/header";
-import Sidebar from "../components/sidebar";
+import "../styleSheets/adminDashboard.css"
+import Header from "../../components/header";
+import Sidebar from "../../components/sidebar";
+import Home from "../../components/home";
 
-const WageMgt = () => {
+const AdminDashboard = () => {
+
     const [openSidebarToggle, setOpenSidebarToggle] = useState(false);
 
     const OpenSidebar = () => {
@@ -15,14 +16,10 @@ const WageMgt = () => {
         <div className='grid-container'>
             <Header OpenSidebar={OpenSidebar}/>
             <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}/>
-            <main className='main-container'>
-                <div className='main-title'>
-                    <h1>WageMgt</h1>
-                </div>
-            </main>
-        </div>
+            <Home/>
 
+        </div>
     );
 };
 
-export default WageMgt;
+export default AdminDashboard;

@@ -5,7 +5,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import "../App.css";
 import PasswordInput from "../components/passwordField";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -13,19 +13,33 @@ const LoginPage = () => {
     const signInSchema = Yup.object().shape({
         username: Yup.string().required("Username is required"),
         password: Yup.string().required("Password is required"),
+        role: Yup.string().required("Role is required")
     });
 
     // Login
     const loginFormik = useFormik({
         initialValues: {
             username: '',
-            password: ''
+            password: '',
+            role: ''
         },
         validationSchema: signInSchema,
         onSubmit: async (values, { resetForm }) => {
             try {
+                // Store role in local storage
+                localStorage.setItem('role', values.role);
+
+                // Navigate to different dashboards based on role
                 if (values.username === 'admin' && values.password === 'admin') {
-                    navigate('/admin-dashboard');
+                    if (values.role === 'Admin') {
+                        navigate('/admin-dashboard');
+                    } else if (values.role === 'HRManager') {
+                        navigate('/hr-dashboard');
+                    } else if (values.role === 'FinanceManager') {
+                        navigate('/finance-dashboard');
+                    } else {
+                        console.error('Invalid role');
+                    }
                 } else {
                     console.error('Invalid username or password');
                 }
@@ -59,6 +73,18 @@ const LoginPage = () => {
                         {loginFormik.touched.password && loginFormik.errors.password ? (
                             <div className="error-message">{loginFormik.errors.password}</div>
                         ) : null}
+                        <Components.Select
+                            className="input-field"
+                            {...loginFormik.getFieldProps("role")}
+                        >
+                            <option value="" label="Select Role" />
+                            <option value="Admin" label="Admin" />
+                            <option value="HRManager" label="HRManager" />
+                            <option value="FinanceManager" label="FinanceManager" />
+                        </Components.Select>
+                        {loginFormik.touched.role && loginFormik.errors.role ? (
+                            <div className="error-message">{loginFormik.errors.role}</div>
+                        ) : null}
                         <Components.Anchor href="#">Forgot your password?</Components.Anchor>
                         <Components.Button type="submit">
                             Sign In
@@ -75,7 +101,7 @@ const LoginPage = () => {
                                 position: "absolute",
                                 top: "10%",
                                 left: "55%",
-                            }}/>
+                            }} />
                         </div>
                     </div>
                 </div>
