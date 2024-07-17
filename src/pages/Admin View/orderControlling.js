@@ -49,15 +49,6 @@ const OrderControlling = () => {
                                         Office Project Management > Order Management
                                     </h6>
                                 </div>
-                                <div className='col text-end'>
-                                    <button
-                                        type='button'
-                                        className='btn btn-success'
-                                        onClick={viewAddEmployerModal}
-                                    >
-                                        + Add Order
-                                    </button>
-                                </div>
                             </div>
                             <div className=''>
                                 <div className='row row-cols-1 row-cols-md-3 g-4'>
