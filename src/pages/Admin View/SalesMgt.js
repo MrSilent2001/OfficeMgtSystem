@@ -44,18 +44,24 @@ const SalesMgt = () => {
         setShowAddSalesModal(false);
     };
 
-    const addSalesConfirmed = () => {
-        console.log("Adding Sale:", newSale);
-        setSalesData([...salesData, { ...newSale, id: new Date().getTime() }]);
-        console.log("Updated Sales Data:", salesData);
-        setNewSale({
-            itemName: '',
-            quantity: '',
-            price: '',
-            date: '',
-            status: 'Pending'
-        });
-        closeAddSalesModal();
+    const addSalesConfirmed = async () => {
+        try {
+            const response = await axios.post('http://localhost/Office_Management/Hadler/itemsManagement.php', newSale);
+            setSalesData([...salesData, response.data]);
+            console.log("Added Sale:", response.data);
+            setNewSale({
+                itemCode:'',
+                itemName: '',
+                quantity: '',
+                price: '',
+                date: '',
+                status: 'Pending'
+            });
+            closeAddSalesModal();
+            fetchItems();
+        } catch (error) {
+            console.error("There was an error adding the sale!", error);
+        }
     };
 
     const viewDeleteConfirmationModal = (id) => {
@@ -251,6 +257,11 @@ const SalesMgt = () => {
                             </h4>
                         </div>
                         <div className='modal-body'>
+                            <div className='mb-3'>
+                                <label htmlFor="itemCode" className='form-label'>Item Code</label>
+                                <input type='text' className='form-control' id='itemCode' value={newSale.itemCode}
+                                       onChange={handleInputChange}/>
+                            </div>
                             <div className='mb-3'>
                                 <label htmlFor="itemName" className='form-label'>Item Name</label>
                                 <input type='text' className='form-control' id='itemName' value={newSale.itemName}

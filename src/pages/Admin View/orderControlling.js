@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import '../styleSheets/adminDashboard.css';
 import '../../App.css';
 import Header from '../../components/header';
@@ -9,52 +10,115 @@ const OrderControlling = () => {
     const [orders, setOrders] = useState([]);
     const [userRole, setUserRole] = useState('');
 
-    useEffect(() => {
-        // Fetch orders from backend
-        fetch('http://localhost/Office_Management/Hadler/OrderManagement.php')
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    setOrders(data.data);
-                } else {
-                    console.error(data.message);
-                }
-            })
-            .catch(error => console.error('Error fetching orders:', error));
-    }, []);
-
-    const OpenSidebar = () => {
+    const toggleSidebar = () => {
         setOpenSidebarToggle(!openSidebarToggle);
     };
 
-    const [modalState, setModalState] = useState({
-        addOrderModal: false,
-        updateOrderModal: false,
-        deleteConfirmationModal: false,
+    const fetchOrders = async () => {
+        try {
+            const response = await axios.get('http://localhost/Office_Management/Hadler/OrderManagement.php');
+            console.log("Fetched Orders:", response.data.data);
+            setOrders(response.data.data);
+        } catch (error) {
+            console.error("There was an error fetching the orders!", error);
+        }
+    };
+
+    const [newOrder, setNewOrder] = useState({
+        item_name: '',
+        quantity: '',
+        ordered_date: '',
+        supplier_name: '',
+        status: '',
+        epfNo: '',
+        empno: '',
+        nic: '',
+        mobile: '',
+        email: '',
+        dob: '',
+        designation: '',
+        salary: ''
     });
 
+    const [showAddOrderModal, setShowAddOrderModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [orderToDelete, setOrderToDelete] = useState(null);
+
     const viewAddOrderModal = () => {
-        setModalState({ ...modalState, addOrderModal: true });
+        setShowAddOrderModal(true);
     };
 
     const closeAddOrderModal = () => {
-        setModalState({ ...modalState, addOrderModal: false });
+        setShowAddOrderModal(false);
     };
 
-    const addOrderConfirmed = () => {
-        closeAddOrderModal();
+    const addOrderConfirmed = async () => {
+        try {
+            const response = await axios.post('http://localhost/Office_Management/Hadler/OrderManagement.php', newOrder);
+            console.log("Backend response:", response.data);
+            setOrders([...orders, response.data]);
+            console.log("Added Order:", response.data);
+            setNewOrder({
+                item_name: '',
+                quantity: '',
+                ordered_date: '',
+                supplier_name: '',
+                status: '',
+                epfNo: '',
+                empno: '',
+                nic: '',
+                mobile: '',
+                email: '',
+                dob: '',
+                designation: '',
+                salary: ''
+            });
+            closeAddOrderModal();
+            fetchOrders();
+        } catch (error) {
+            console.error("There was an error adding the order!", error);
+        }
     };
+
+    const viewDeleteConfirmationModal = (id) => {
+        setOrderToDelete(id);
+        setShowDeleteModal(true);
+    };
+
+    const closeDeleteConfirmationModal = () => {
+        setShowDeleteModal(false);
+    };
+
+    const deleteOrderConfirmed = async () => {
+        try {
+            await axios.delete(`http://localhost/Office_Management/Hadler/OrderManagement.php?id=${orderToDelete}`);
+            setOrders(orders.filter(order => order.order_id !== orderToDelete));
+            setShowDeleteModal(false);
+            setOrderToDelete(null);
+        } catch (error) {
+            console.error("There was an error deleting the order!", error);
+        }
+    };
+
+    const handleInputChange = (e) => {
+        const { id, value } = e.target;
+        setNewOrder({ ...newOrder, [id]: value });
+    };
+
+    useEffect(() => {
+        fetchOrders();
+    }, []);
 
     useEffect(() => {
         const role = localStorage.getItem('role');
         setUserRole(role);
-        console.log(userRole)
-    }, []);
+        console.log(userRole);
+    }, [userRole]);
 
     return (
         <div className='grid-container'>
-            <Header OpenSidebar={OpenSidebar} />
-            <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} />
+            <Header OpenSidebar={toggleSidebar} />
+            <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={toggleSidebar} />
             <main className='main-container'>
                 <div className='main-title'>
                     <div className='row' style={{ marginRight: '1%' }}>
@@ -65,7 +129,7 @@ const OrderControlling = () => {
                                         Office Project Management > Order Management
                                     </h6>
                                 </div>
-                                {userRole === 'HRManager' || 'FinanceManager' ? (
+                                {userRole === 'HRManager' || userRole === 'FinanceManager' ? (
                                     <div className='col text-end'>
                                         <button
                                             type='button'
@@ -76,18 +140,17 @@ const OrderControlling = () => {
                                         </button>
                                     </div>
                                 ) : null}
-                                
-                                    </div>
-                                    <div className=''>
-                                    <div className='row row-cols-1 row-cols-md-3 g-4'>
-                                {orders.map((order, idx) => (
-                                    <div className='col' key={idx}>
-                                <div className='card'>
-                                    <div className='card-body'>
-                                        <div className='p-1 row'>
-                                            <div className='col-8'>
-                                                <p>Order ID - #{order.order_id}</p>
-                                            </div>
+                            </div>
+                            <div className=''>
+                                <div className='row row-cols-1 row-cols-md-3 g-4'>
+                                    {orders.map((order, idx) => (
+                                        <div className='col' key={idx}>
+                                            <div className='card'>
+                                                <div className='card-body'>
+                                                    <div className='p-1 row'>
+                                                        <div className='col-8'>
+                                                            <p>Order ID - #{order.order_id}</p>
+                                                        </div>
                                                         <div className='col-4 text-end'>
                                                             <span className={`badge bg-${order.status === 'Pending' ? 'secondary' : 'primary'}`}>{order.status}</span>
                                                         </div>
@@ -137,8 +200,8 @@ const OrderControlling = () => {
 
             {/* Add Order Modal */}
             <div
-                className={`modal fade bd-example-modal-lg ${modalState.addOrderModal ? 'show' : ''}`}
-                style={{ display: modalState.addOrderModal ? 'block' : 'none' }}
+                className={`modal fade bd-example-modal-lg ${showAddOrderModal ? 'show' : ''}`}
+                style={{ display: showAddOrderModal ? 'block' : 'none' }}
                 tabIndex='-1'
                 role='dialog'
                 aria-labelledby='myLargeModalLabel'
@@ -154,7 +217,7 @@ const OrderControlling = () => {
                         <div className='modal-body'>
                             <div className='mb-3'>
                                 <label className='form-label'>Order Name</label>
-                                <input type='text' className='form-control' id='name' />
+                                <input type='text' className='form-control' id='item_name' value={newOrder.item_name} onChange={handleInputChange} />
                                 <small
                                     className='text-danger'
                                     id='warningAddOrder1'
@@ -165,7 +228,7 @@ const OrderControlling = () => {
                             </div>
                             <div className='mb-3'>
                                 <label className='form-label'>Address</label>
-                                <input type='text' className='form-control' id='address' />
+                                <input type='text' className='form-control' id='address' value={newOrder.address} onChange={handleInputChange} />
                                 <small
                                     className='text-danger'
                                     id='warningAddOrder2'
@@ -178,7 +241,7 @@ const OrderControlling = () => {
                                 <div className='col'>
                                     <div className='mb-3'>
                                         <label className='form-label'>EPF No</label>
-                                        <input type='text' className='form-control' id='epfNo' />
+                                        <input type='text' className='form-control' id='epfNo' value={newOrder.epfNo} onChange={handleInputChange} />
                                         <small
                                             className='text-danger'
                                             id='warningAddOrder3'
@@ -191,7 +254,7 @@ const OrderControlling = () => {
                                 <div className='col'>
                                     <div className='mb-3'>
                                         <label className='form-label'>Employee Number</label>
-                                        <input type='number' className='form-control' id='empno' />
+                                        <input type='number' className='form-control' id='empno' value={newOrder.empno} onChange={handleInputChange} />
                                         <small
                                             className='text-danger'
                                             id='warningAddOrder4'
@@ -204,7 +267,7 @@ const OrderControlling = () => {
                                 <div className='col'>
                                     <div className='mb-3'>
                                         <label className='form-label'>NIC</label>
-                                        <input type='text' className='form-control' id='nic' />
+                                        <input type='text' className='form-control' id='nic' value={newOrder.nic} onChange={handleInputChange} />
                                         <small
                                             className='text-danger'
                                             id='warningAddOrder5'
@@ -216,38 +279,36 @@ const OrderControlling = () => {
                                 </div>
                             </div>
                             <div className='row'>
-                                <div className='col-4'>
+                                <div className='col'>
                                     <div className='mb-3'>
-                                        <label className='form-label'>Mobile Number</label>
-                                        <input type='number' className='form-control' id='mobile' />
+                                        <label className='form-label'>Mobile</label>
+                                        <input type='tel' className='form-control' id='mobile' value={newOrder.mobile} onChange={handleInputChange} />
                                         <small
                                             className='text-danger'
                                             id='warningAddOrder6'
                                             style={{ display: 'none' }}
                                         >
-                                            Please Enter Mobile Number
+                                            Please Enter Mobile
                                         </small>
                                     </div>
                                 </div>
-                                <div className='col-8'>
+                                <div className='col'>
                                     <div className='mb-3'>
-                                        <label className='form-label'>Email Address</label>
-                                        <input type='text' className='form-control' id='email' />
+                                        <label className='form-label'>Email</label>
+                                        <input type='email' className='form-control' id='email' value={newOrder.email} onChange={handleInputChange} />
                                         <small
                                             className='text-danger'
                                             id='warningAddOrder7'
                                             style={{ display: 'none' }}
                                         >
-                                            Please Enter Email Address
+                                            Please Enter Email
                                         </small>
                                     </div>
                                 </div>
-                            </div>
-                            <div className='row'>
                                 <div className='col'>
                                     <div className='mb-3'>
-                                        <label className='form-label'>Date of Birth</label>
-                                        <input type='date' className='form-control' id='dob' />
+                                        <label className='form-label'>Date of Order</label>
+                                        <input type='date' className='form-control' id='ordered_date' value={newOrder.ordered_date} onChange={handleInputChange} />
                                         <small
                                             className='text-danger'
                                             id='warningAddOrder8'
@@ -257,10 +318,12 @@ const OrderControlling = () => {
                                         </small>
                                     </div>
                                 </div>
+                            </div>
+                            <div className='row'>
                                 <div className='col'>
                                     <div className='mb-3'>
                                         <label className='form-label'>Designation</label>
-                                        <input type='text' className='form-control' id='designation' />
+                                        <input type='text' className='form-control' id='supplier_name' value={newOrder.supplier_name} onChange={handleInputChange} />
                                         <small
                                             className='text-danger'
                                             id='warningAddOrder9'
@@ -270,33 +333,58 @@ const OrderControlling = () => {
                                         </small>
                                     </div>
                                 </div>
-                            </div>
-                            <div className='mb-3'>
-                                <label className='form-label'>Basic Salary</label>
-                                <input type='text' className='form-control' id='salary' />
-                                <small
-                                    className='text-danger'
-                                    id='warningAddOrder10'
-                                    style={{ display: 'none' }}
-                                >
-                                    Please Enter Basic Salary
-                                </small>
+                                <div className='col'>
+                                    <div className='mb-3'>
+                                        <label className='form-label'>Quantity</label>
+                                        <input type='number' className='form-control' id='quantity' value={newOrder.quantity} onChange={handleInputChange} />
+                                        <small
+                                            className='text-danger'
+                                            id='warningAddOrder10'
+                                            style={{ display: 'none' }}
+                                        >
+                                            Please Enter Salary
+                                        </small>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div className='modal-footer'>
-                            <button
-                                type='button'
-                                className='btn btn-secondary'
-                                onClick={closeAddOrderModal}
-                            >
+                            <button type='button' className='btn btn-secondary' onClick={closeAddOrderModal}>
                                 Close
                             </button>
-                            <button
-                                type='button'
-                                className='btn btn-primary'
-                                onClick={addOrderConfirmed}
-                            >
+                            <button type='button' className='btn btn-primary' onClick={addOrderConfirmed}>
                                 Add Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Delete Confirmation Modal */}
+            <div
+                className={`modal fade ${showDeleteModal ? 'show' : ''}`}
+                style={{ display: showDeleteModal ? 'block' : 'none' }}
+                tabIndex='-1'
+                role='dialog'
+                aria-labelledby='deleteModalLabel'
+                aria-hidden='true'
+            >
+                <div className='modal-dialog'>
+                    <div className='modal-content'>
+                        <div className='modal-header'>
+                            <h5 className='modal-title' id='deleteModalLabel'>
+                                Confirm Delete
+                            </h5>
+                        </div>
+                        <div className='modal-body'>
+                            Are you sure you want to delete this order?
+                        </div>
+                        <div className='modal-footer'>
+                            <button type='button' className='btn btn-secondary' onClick={closeDeleteConfirmationModal}>
+                                Close
+                            </button>
+                            <button type='button' className='btn btn-danger' onClick={deleteOrderConfirmed}>
+                                Delete Order
                             </button>
                         </div>
                     </div>
