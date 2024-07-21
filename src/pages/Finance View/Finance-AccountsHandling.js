@@ -1,4 +1,5 @@
-import React, {useState} from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import "../styleSheets/adminDashboard.css";
 import '../../App.css';
 import Header from "../../components/header";
@@ -22,6 +23,23 @@ const FinanceAccountsHandling = () => {
         role: ''
     });
 
+    useEffect(() => {
+        fetchEmployees();
+    }, []);
+
+    const fetchEmployees = async () => {
+        try {
+            const response = await axios.get('http://localhost/Office_Management/Handler/SupplierManagement.php');
+            if(response.data.status === "success") {
+                setEmployees(response.data.data); // Ensure you are setting the correct data
+            } else {
+                console.error('Error fetching data: ', response.data.message);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
     const OpenSidebar = () => {
         setOpenSidebarToggle(!openSidebarToggle);
     };
@@ -35,7 +53,10 @@ const FinanceAccountsHandling = () => {
             email: '',
             mobile: '',
             dob: '',
-            itemCount: 0
+            doj: '',
+            username: '',
+            password: '',
+            role: ''
         });
     };
 
@@ -46,35 +67,43 @@ const FinanceAccountsHandling = () => {
     const handleCloseDeleteModal = () => setShowDeleteModal(false);
 
     const handleInputChange = (e) => {
-        const {id, value} = e.target;
-        setNewEmployee({...newEmployee, [id]: value});
+        const { id, value } = e.target;
+        setNewEmployee({ ...newEmployee, [id]: value });
     };
 
-    const addEmployerConfirmed = () => {
-        setEmployees([...employees, newEmployee]);
-        handleCloseAddModal();
+    const addEmployerConfirmed = async () => {
+        try {
+            await axios.post('http://localhost/Office_Management/Handler/SupplierManagement.php', newEmployee);
+            fetchEmployees(); // Refresh the list after adding a new employee
+            handleCloseAddModal();
+        } catch (error) {
+            console.error('Error adding employee:', error);
+        }
     };
 
-    const updateEmployerConfirmed = () => {
+    const updateEmployerConfirmed = async () => {
         // Update employer logic here
+        // Example: await axios.put('http://localhost/Office_Management/Handler/SupplierManagement.php', updatedEmployee);
     };
 
-    const deleteEmployerConfirmed = () => {
+    const deleteEmployerConfirmed = async (employeeId) => {
         // Delete employer logic here
+        // Example: await axios.delete(`http://localhost/Office_Management/Handler/SupplierManagement.php?id=${employeeId}`);
+        fetchEmployees(); // Refresh the list after deleting an employee
+        handleCloseDeleteModal();
     };
 
     return (
         <div className='grid-container'>
-            <Header OpenSidebar={OpenSidebar}/>
-            <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}/>
+            <Header OpenSidebar={OpenSidebar} />
+            <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} />
             <main className='main-container'>
                 <div className='main-title'>
-                    <div className="row" style={{marginRight: "1%"}}>
-                        <div className="col-10" style={{width: "78vw"}}>
+                    <div className="row" style={{ marginRight: "1%" }}>
+                        <div className="col-10" style={{ width: "78vw" }}>
                             <div className="row my-4">
                                 <div className="col">
-                                    <h6 className="text-secondary my-2">Office Management > Finance-Accounts
-                                        Management</h6>
+                                    <h6 className="text-secondary my-2">Office Management > Finance-Accounts Management</h6>
                                 </div>
                                 <div className="col text-end">
                                     <button type="button" className="btn btn-success" onClick={handleShowAddModal}>
@@ -83,24 +112,23 @@ const FinanceAccountsHandling = () => {
                                 </div>
                             </div>
                             <table className="table table-bordered">
-                                <thead className="text-white" style={{backgroundColor: "#C19A6B"}}>
+                                <thead className="text-white" style={{ backgroundColor: "#C19A6B" }}>
                                 <tr>
-                                    <th scope="col" style={{width: "12%"}}>Supplier ID</th>
-                                    <th scope="col" style={{width: "20%"}}>Supplier Name</th>
-                                    <th scope="col" style={{width: "20%"}}>Email</th>
-                                    <th scope="col" style={{width: "28%"}}>Address</th>
-                                    <th scope="col" style={{width: "14%"}}>Mobile Number</th>
-                                    <th scope="col" style={{width: "14%"}}>Item Count</th>
+                                    <th scope="col" style={{ width: "12%" }}>Item ID</th>
+                                    <th scope="col" style={{ width: "20%" }}>Item Name</th>
+                                    <th scope="col" style={{ width: "20%" }}>Quantity</th>
+                                    <th scope="col" style={{ width: "28%" }}>Price</th>
+                                    <th scope="col" style={{ width: "14%" }}>Supplier</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 {employees.map((employee, index) => (
                                     <tr key={index}>
-                                        <td>{index + 1}</td>
-                                        <td>{employee.name}</td>
-                                        <td>{employee.email}</td>
-                                        <td>{employee.address}</td>
-                                        <td>{employee.mobile}</td>
+                                        <td>{employee.item_id}</td>
+                                        <td>{employee.item_name}</td>
+                                        <td>{employee.qty}</td>
+                                        <td>{employee.price}</td>
+                                        <td>{employee.supplier}</td>
                                     </tr>
                                 ))}
                                 </tbody>
@@ -109,28 +137,25 @@ const FinanceAccountsHandling = () => {
 
                         {/* Add Employee Modal */}
                         <div className={`modal fade bd-example-modal-lg ${showAddModal ? "show d-block" : ""}`}
-                             tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                             tabIndex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
                             <div className="modal-dialog modal-lg">
                                 <div className="modal-content">
                                     <div className="modal-header">
                                         <h4 className="modal-title fs-5" id="staticBackdropLabel">Add New Supplier</h4>
-                                        <button type="button" className="btn-close"
-                                                onClick={handleCloseAddModal}></button>
+                                        <button type="button" className="btn-close" onClick={handleCloseAddModal}></button>
                                     </div>
                                     <div className="modal-body">
                                         <div className="mb-3">
                                             <label htmlFor="name" className="form-label">Supplier Name</label>
-                                            <input type="text" className="form-control" id="name"/>
-                                            <small className="text-danger" id="warningAddEmployer1"
-                                                   style={{display: 'none'}}>
+                                            <input type="text" className="form-control" id="name" value={newEmployee.name} onChange={handleInputChange} />
+                                            <small className="text-danger" id="warningAddEmployer1" style={{ display: 'none' }}>
                                                 Please Enter Employer Name
                                             </small>
                                         </div>
                                         <div className="mb-3">
                                             <label htmlFor="address" className="form-label">Address</label>
-                                            <input type="text" className="form-control" id="address"/>
-                                            <small className="text-danger" id="warningAddEmployer2"
-                                                   style={{display: 'none'}}>
+                                            <input type="text" className="form-control" id="address" value={newEmployee.address} onChange={handleInputChange} />
+                                            <small className="text-danger" id="warningAddEmployer2" style={{ display: 'none' }}>
                                                 Please Enter Employer Address
                                             </small>
                                         </div>
@@ -138,20 +163,17 @@ const FinanceAccountsHandling = () => {
                                             <div className="col-6">
                                                 <div className="mb-3">
                                                     <label htmlFor="epfNo" className="form-label">EPF No</label>
-                                                    <input type="text" className="form-control" id="epfNo"/>
-                                                    <small className="text-danger" id="warningAddEmployer3"
-                                                           style={{display: 'none'}}>
+                                                    <input type="text" className="form-control" id="epfNo" value={newEmployee.epfNo} onChange={handleInputChange} />
+                                                    <small className="text-danger" id="warningAddEmployer3" style={{ display: 'none' }}>
                                                         Please Enter EPF No
                                                     </small>
                                                 </div>
                                             </div>
                                             <div className="col-6">
                                                 <div className="mb-3">
-                                                    <label htmlFor="empNo" className="form-label">Supplier
-                                                        Number</label>
-                                                    <input type="number" className="form-control" id="empNo"/>
-                                                    <small className="text-danger" id="warningAddEmployer4"
-                                                           style={{display: 'none'}}>
+                                                    <label htmlFor="empNo" className="form-label">Supplier Number</label>
+                                                    <input type="number" className="form-control" id="empNo" value={newEmployee.empNo} onChange={handleInputChange} />
+                                                    <small className="text-danger" id="warningAddEmployer4" style={{ display: 'none' }}>
                                                         Please Enter Employee Number
                                                     </small>
                                                 </div>
@@ -161,9 +183,8 @@ const FinanceAccountsHandling = () => {
                                             <div className="col-6">
                                                 <div className="mb-3">
                                                     <label htmlFor="mobile" className="form-label">Mobile Number</label>
-                                                    <input type="number" className="form-control" id="mobile"/>
-                                                    <small className="text-danger" id="warningAddEmployer6"
-                                                           style={{display: 'none'}}>
+                                                    <input type="number" className="form-control" id="mobile" value={newEmployee.mobile} onChange={handleInputChange} />
+                                                    <small className="text-danger" id="warningAddEmployer6" style={{ display: 'none' }}>
                                                         Please Enter Mobile Number
                                                     </small>
                                                 </div>
@@ -171,9 +192,8 @@ const FinanceAccountsHandling = () => {
                                             <div className="col-6">
                                                 <div className="mb-3">
                                                     <label htmlFor="email" className="form-label">Email Address</label>
-                                                    <input type="text" className="form-control" id="email"/>
-                                                    <small className="text-danger" id="warningAddEmployer7"
-                                                           style={{display: 'none'}}>
+                                                    <input type="text" className="form-control" id="email" value={newEmployee.email} onChange={handleInputChange} />
+                                                    <small className="text-danger" id="warningAddEmployer7" style={{ display: 'none' }}>
                                                         Please Enter Email Address
                                                     </small>
                                                 </div>
@@ -183,20 +203,18 @@ const FinanceAccountsHandling = () => {
                                             <div className="col-6">
                                                 <div className="mb-3">
                                                     <label htmlFor="dob" className="form-label">Date of Birth</label>
-                                                    <input type="date" className="form-control" id="dob"/>
-                                                    <small className="text-danger" id="warningAddEmployer8"
-                                                           style={{display: 'none'}}>
+                                                    <input type="date" className="form-control" id="dob" value={newEmployee.dob} onChange={handleInputChange} />
+                                                    <small className="text-danger" id="warningAddEmployer8" style={{ display: 'none' }}>
                                                         Please Enter Date of Birth
                                                     </small>
                                                 </div>
                                             </div>
                                             <div className="col-6">
                                                 <div className="mb-3">
-                                                    <label htmlFor="nic" className="form-label">NIC</label>
-                                                    <input type="text" className="form-control" id="nic"/>
-                                                    <small className="text-danger" id="warningAddEmployer5"
-                                                           style={{display: 'none'}}>
-                                                        Please Enter NIC
+                                                    <label htmlFor="doj" className="form-label">Date of Joining</label>
+                                                    <input type="date" className="form-control" id="doj" value={newEmployee.doj} onChange={handleInputChange} />
+                                                    <small className="text-danger" id="warningAddEmployer9" style={{ display: 'none' }}>
+                                                        Please Enter Date of Joining
                                                     </small>
                                                 </div>
                                             </div>
@@ -204,82 +222,71 @@ const FinanceAccountsHandling = () => {
                                         <div className="row">
                                             <div className="col-6">
                                                 <div className="mb-3">
-                                                    <label htmlFor="dob" className="form-label">Item Count</label>
-                                                    <input type="number" className="form-control" id="dob"/>
-                                                    <small className="text-danger" id="warningAddEmployer8"
-                                                           style={{display: 'none'}}>
+                                                    <label htmlFor="role" className="form-label">Designation</label>
+                                                    <select className="form-select" id="role" value={newEmployee.role} onChange={handleInputChange}>
+                                                        <option value="2">Staff</option>
+                                                        <option value="1">HR Manager</option>
+                                                        <option value="0">Finance Manager</option>
+                                                    </select>
+                                                    <small className="text-danger" id="warningAddEmployer10" style={{ display: 'none' }}>
+                                                        Please Select Designation
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div className="col-6">
+                                                <div className="mb-3">
+                                                    <label htmlFor="password" className="form-label">Password</label>
+                                                    <input type="password" className="form-control" id="password" value={newEmployee.password} onChange={handleInputChange} />
+                                                    <small className="text-danger" id="warningAddEmployer11" style={{ display: 'none' }}>
+                                                        Please Enter Password
                                                     </small>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="modal-footer">
-                                        <button type="button" className="btn btn-danger"
-                                                onClick={handleCloseAddModal}>Cancel
-                                        </button>
-                                        <button type="button" className="btn btn-success"
-                                                onClick={addEmployerConfirmed}>Create
-                                        </button>
+                                        <button type="button" className="btn btn-secondary" onClick={handleCloseAddModal}>Cancel</button>
+                                        <button type="button" className="btn btn-success" onClick={addEmployerConfirmed}>Add</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Update Supplier Modal */}
+                        {/* Update Employee Modal */}
                         <div className={`modal fade bd-example-modal-lg ${showUpdateModal ? "show d-block" : ""}`}
-                             tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                             tabIndex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
                             <div className="modal-dialog modal-lg">
                                 <div className="modal-content">
                                     <div className="modal-header">
                                         <h4 className="modal-title fs-5" id="staticBackdropLabel">Update Supplier</h4>
-                                        <button type="button" className="btn-close"
-                                                onClick={handleCloseUpdateModal}></button>
+                                        <button type="button" className="btn-close" onClick={handleCloseUpdateModal}></button>
                                     </div>
                                     <div className="modal-body">
-                                        {/* Update Supplier form fields */}
-                                        <div className="mb-3">
-                                            <label htmlFor="nameuID" className="form-label">Supplier Name</label>
-                                            <input type="text" className="form-control" id="nameuID" name="nameu"/>
-                                        </div>
-                                        <div className="mb-3">
-                                            <label htmlFor="addressuID" className="form-label">Address</label>
-                                            <input type="text" className="form-control" id="addressuID"
-                                                   name="addressu"/>
-                                        </div>
-                                        {/* Add other fields as needed */}
+                                        {/* Update form content here */}
                                     </div>
                                     <div className="modal-footer">
-                                        <button type="button" className="btn btn-danger"
-                                                onClick={handleCloseUpdateModal}>Cancel
-                                        </button>
-                                        <button type="button" className="btn btn-success"
-                                                onClick={updateEmployerConfirmed}>Update Supplier
-                                        </button>
+                                        <button type="button" className="btn btn-secondary" onClick={handleCloseUpdateModal}>Cancel</button>
+                                        <button type="button" className="btn btn-primary" onClick={updateEmployerConfirmed}>Update</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Delete Supplier Modal */}
-                        <div className={`modal fade ${showDeleteModal ? "show d-block" : ""}`} tabindex="-1"
-                             role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                            <div className="modal-dialog">
+                        {/* Delete Employee Modal */}
+                        <div className={`modal fade bd-example-modal-lg ${showDeleteModal ? "show d-block" : ""}`}
+                             tabIndex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                            <div className="modal-dialog modal-lg">
                                 <div className="modal-content">
                                     <div className="modal-header">
                                         <h4 className="modal-title fs-5" id="staticBackdropLabel">Delete Supplier</h4>
-                                        <button type="button" className="btn-close"
-                                                onClick={handleCloseDeleteModal}></button>
+                                        <button type="button" className="btn-close" onClick={handleCloseDeleteModal}></button>
                                     </div>
                                     <div className="modal-body">
-                                        Are you sure want to delete this Supplier?
+                                        <p>Are you sure you want to delete this supplier?</p>
                                     </div>
                                     <div className="modal-footer">
-                                        <button type="button" className="btn btn-success"
-                                                onClick={handleCloseDeleteModal}>No
-                                        </button>
-                                        <button type="button" className="btn btn-danger"
-                                                onClick={deleteEmployerConfirmed}>Yes, Delete
-                                        </button>
+                                        <button type="button" className="btn btn-secondary" onClick={handleCloseDeleteModal}>Cancel</button>
+                                        <button type="button" className="btn btn-danger" onClick={deleteEmployerConfirmed}>Delete</button>
                                     </div>
                                 </div>
                             </div>

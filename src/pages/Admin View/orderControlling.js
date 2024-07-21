@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styleSheets/adminDashboard.css';
 import '../../App.css';
 import Header from '../../components/header';
@@ -6,33 +6,24 @@ import Sidebar from '../../components/sidebar';
 
 const OrderControlling = () => {
     const [openSidebarToggle, setOpenSidebarToggle] = useState(false);
+    const [orders, setOrders] = useState([]);
+
+    useEffect(() => {
+        // Fetch orders from backend
+        fetch('http://localhost/Office_Management/Hadler/OrderManagement.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    setOrders(data.data);
+                } else {
+                    console.error(data.message);
+                }
+            })
+            .catch(error => console.error('Error fetching orders:', error));
+    }, []);
 
     const OpenSidebar = () => {
         setOpenSidebarToggle(!openSidebarToggle);
-    };
-
-    const [modalState, setModalState] = useState({
-        addEmployerModal: false,
-        updateEmployerModal: false,
-        deleteConfirmationModal: false,
-    });
-
-    const viewAddEmployerModal = () => {
-        setModalState({ ...modalState, addEmployerModal: true });
-    };
-
-    const closeAddEmployerModal = () => {
-        setModalState({ ...modalState, addEmployerModal: false });
-    };
-
-    const addEmployerConfirmed = () => {
-        // Add employer logic here
-        closeAddEmployerModal();
-    };
-
-    const DeleteEmployerConfim = () => {
-        // Delete employer logic here
-        setModalState({ ...modalState, deleteConfirmationModal: false });
     };
 
     return (
@@ -52,16 +43,16 @@ const OrderControlling = () => {
                             </div>
                             <div className=''>
                                 <div className='row row-cols-1 row-cols-md-3 g-4'>
-                                    {[...Array(3)].map((_, idx) => (
+                                    {orders.map((order, idx) => (
                                         <div className='col' key={idx}>
                                             <div className='card'>
                                                 <div className='card-body'>
                                                     <div className='p-1 row'>
                                                         <div className='col-8'>
-                                                            <p>Order ID - #2406300005654</p>
+                                                            <p>Order ID - #{order.order_id}</p>
                                                         </div>
                                                         <div className='col-4 text-end'>
-                                                            <span className='badge bg-secondary'>Pending</span>
+                                                            <span className={`badge bg-${order.status === 'Pending' ? 'secondary' : 'primary'}`}>{order.status}</span>
                                                         </div>
                                                     </div>
                                                     <hr />
@@ -81,13 +72,13 @@ const OrderControlling = () => {
                                                         </thead>
                                                         <tbody>
                                                         <tr>
-                                                            <td style={{ width: '12%' }}>Item 01</td>
-                                                            <td style={{ width: '20%' }}>10</td>
+                                                            <td style={{ width: '12%' }}>{order.item_name}</td>
+                                                            <td style={{ width: '20%' }}>{order.quantity}</td>
                                                         </tr>
                                                         </tbody>
                                                     </table>
-                                                    <p>Ordered Date - 30 / 06/ 2024</p>
-                                                    <p>Supplier Name - Dasun Lakmal</p>
+                                                    <p>Ordered Date - {order.ordered_date}</p>
+                                                    <p>Supplier Name - {order.supplier_name}</p>
                                                     <div className='text-center'>
                                                         <button type='button' className='btn btn-success'>
                                                             Success
@@ -100,248 +91,7 @@ const OrderControlling = () => {
                                             </div>
                                         </div>
                                     ))}
-                                    <div className='col'>
-                                        <div className='card'>
-                                            <div className='card-body'>
-                                                <div className='p-1 row'>
-                                                    <div className='col-8'>
-                                                        <p>Order ID - #2406300005621</p>
-                                                    </div>
-                                                    <div className='col-4 text-end'>
-                                                        <span className='badge bg-primary'>Completed</span>
-                                                    </div>
-                                                </div>
-                                                <hr />
-                                                <table className='table table-bordered'>
-                                                    <thead
-                                                        className='text-white'
-                                                        style={{ backgroundColor: '#C19A6B' }}
-                                                    >
-                                                    <tr>
-                                                        <th scope='col' style={{ width: '12%' }}>Item Name</th>
-                                                        <th scope='col' style={{ width: '20%' }}>Quantity</th>
-                                                    </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                    <tr>
-                                                        <td style={{ width: '12%' }}>Item 05</td>
-                                                        <td style={{ width: '20%' }}>25</td>
-                                                    </tr>
-                                                    </tbody>
-                                                </table>
-                                                <p>Ordered Date - 25 / 06/ 2024</p>
-                                                <p>Supplier Name - Kasun Madushan</p>
-                                                <div className='text-center'>
-                                                    <button type='button' className='btn btn-danger'>
-                                                        DELETE
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Add Employer Modal */}
-                <div
-                    className={`modal fade bd-example-modal-lg ${modalState.addEmployerModal ? 'show' : ''}`}
-                    style={{ display: modalState.addEmployerModal ? 'block' : 'none' }}
-                    tabIndex='-1'
-                    role='dialog'
-                    aria-labelledby='myLargeModalLabel'
-                    aria-hidden='true'
-                >
-                    <div className='modal-dialog modal-lg'>
-                        <div className='modal-content'>
-                            <div className='modal-header'>
-                                <h4 className='modal-title fs-5' id='staticBackdropLabel'>
-                                    Add New Employer
-                                </h4>
-                            </div>
-                            <div className='modal-body'>
-                                <div className='mb-3'>
-                                    <label className='form-label'>Employer Name</label>
-                                    <input type='text' className='form-control' id='name' />
-                                    <small
-                                        className='text-danger'
-                                        id='warningAddEmployer1'
-                                        style={{ display: 'none' }}
-                                    >
-                                        Please Enter Employer Name
-                                    </small>
-                                </div>
-                                <div className='mb-3'>
-                                    <label className='form-label'>Address</label>
-                                    <input type='text' className='form-control' id='address' />
-                                    <small
-                                        className='text-danger'
-                                        id='warningAddEmployer2'
-                                        style={{ display: 'none' }}
-                                    >
-                                        Please Enter Employer Address
-                                    </small>
-                                </div>
-                                <div className='row'>
-                                    <div className='col'>
-                                        <div className='mb-3'>
-                                            <label className='form-label'>EPF No</label>
-                                            <input type='text' className='form-control' id='epfNo' />
-                                            <small
-                                                className='text-danger'
-                                                id='warningAddEmployer3'
-                                                style={{ display: 'none' }}
-                                            >
-                                                Please Enter EPF No
-                                            </small>
-                                        </div>
-                                    </div>
-                                    <div className='col'>
-                                        <div className='mb-3'>
-                                            <label className='form-label'>Employee Number</label>
-                                            <input type='number' className='form-control' id='empno' />
-                                            <small
-                                                className='text-danger'
-                                                id='warningAddEmployer4'
-                                                style={{ display: 'none' }}
-                                            >
-                                                Please Enter Employee Number
-                                            </small>
-                                        </div>
-                                    </div>
-                                    <div className='col'>
-                                        <div className='mb-3'>
-                                            <label className='form-label'>NIC</label>
-                                            <input type='text' className='form-control' id='nic' />
-                                            <small
-                                                className='text-danger'
-                                                id='warningAddEmployer5'
-                                                style={{ display: 'none' }}
-                                            >
-                                                Please Enter NIC
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className='row'>
-                                    <div className='col-4'>
-                                        <div className='mb-3'>
-                                            <label className='form-label'>Mobile Number</label>
-                                            <input type='number' className='form-control' id='mobile' />
-                                            <small
-                                                className='text-danger'
-                                                id='warningAddEmployer6'
-                                                style={{ display: 'none' }}
-                                            >
-                                                Please Enter Mobile Number
-                                            </small>
-                                        </div>
-                                    </div>
-                                    <div className='col-8'>
-                                        <div className='mb-3'>
-                                            <label className='form-label'>Email Address</label>
-                                            <input type='text' className='form-control' id='email' />
-                                            <small
-                                                className='text-danger'
-                                                id='warningAddEmployer7'
-                                                style={{ display: 'none' }}
-                                            >
-                                                Please Enter Email Address
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className='row'>
-                                    <div className='col'>
-                                        <div className='mb-3'>
-                                            <label className='form-label'>Date of Birth</label>
-                                            <input type='date' className='form-control' id='dob' />
-                                            <small
-                                                className='text-danger'
-                                                id='warningAddEmployer8'
-                                                style={{ display: 'none' }}
-                                            >
-                                                Please Enter Date of Birth
-                                            </small>
-                                        </div>
-                                    </div>
-                                    <div className='col'>
-                                        <div className='mb-3'>
-                                            <label className='form-label'>Designation</label>
-                                            <input type='text' className='form-control' id='designation' />
-                                            <small
-                                                className='text-danger'
-                                                id='warningAddEmployer9'
-                                                style={{ display: 'none' }}
-                                            >
-                                                Please Enter Designation
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className='mb-3'>
-                                    <label className='form-label'>Basic Salary</label>
-                                    <input type='text' className='form-control' id='salary' />
-                                    <small
-                                        className='text-danger'
-                                        id='warningAddEmployer10'
-                                        style={{ display: 'none' }}
-                                    >
-                                        Please Enter Basic Salary
-                                    </small>
-                                </div>
-                            </div>
-                            <div className='modal-footer'>
-                                <button
-                                    type='button'
-                                    className='btn btn-secondary'
-                                    onClick={closeAddEmployerModal}
-                                >
-                                    Close
-                                </button>
-                                <button
-                                    type='button'
-                                    className='btn btn-primary'
-                                    onClick={addEmployerConfirmed}
-                                >
-                                    Add Employer
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Delete Employer Confirmation Modal */}
-                <div
-                    className={`modal fade ${modalState.deleteConfirmationModal ? 'show' : ''}`}
-                    tabIndex='-1'
-                    style={{ display: modalState.deleteConfirmationModal ? 'block' : 'none' }}
-                >
-                    <div className='modal-dialog modal-sm'>
-                        <div className='modal-content'>
-                            <div className='modal-header'>
-                                <h5 className='modal-title'>Delete Employer</h5>
-                            </div>
-                            <div className='modal-body'>Are you sure you want to delete this employer?</div>
-                            <div className='modal-footer'>
-                                <button
-                                    type='button'
-                                    className='btn btn-secondary'
-                                    onClick={() =>
-                                        setModalState({ ...modalState, deleteConfirmationModal: false })
-                                    }
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type='button'
-                                    className='btn btn-danger'
-                                    onClick={DeleteEmployerConfim}
-                                >
-                                    Delete
-                                </button>
                             </div>
                         </div>
                     </div>

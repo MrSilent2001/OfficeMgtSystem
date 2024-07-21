@@ -1,4 +1,5 @@
-import React, {useState} from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import "../styleSheets/adminDashboard.css";
 import '../../App.css';
 import Header from "../../components/header";
@@ -11,16 +12,25 @@ const AccountsHandling = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [employees, setEmployees] = useState([]);
     const [newEmployee, setNewEmployee] = useState({
-        name: '',
+        employee_name: '',
         address: '',
         email: '',
-        mobile: '',
-        dob: '',
-        doj: '',
+        mobile_number: '',
         username: '',
         password: '',
-        role: ''
+        position: ''
     });
+
+    useEffect(() => {
+        // Fetch employees data from the backend
+        axios.get('http://localhost/Office_Management/Hadler/AccountManagement.php')
+            .then(response => {
+                setEmployees(response.data.data); // Adjust this based on your PHP response structure
+            })
+            .catch(error => {
+                console.error('There was an error fetching the employees data!', error);
+            });
+    }, []);
 
     const OpenSidebar = () => {
         setOpenSidebarToggle(!openSidebarToggle);
@@ -30,15 +40,13 @@ const AccountsHandling = () => {
     const handleCloseAddModal = () => {
         setShowAddModal(false);
         setNewEmployee({
-            name: '',
+            employee_name: '',
             address: '',
             email: '',
-            mobile: '',
-            dob: '',
-            doj: '',
+            mobile_number: '',
             username: '',
             password: '',
-            role: ''
+            position: ''
         });
     };
 
@@ -54,8 +62,14 @@ const AccountsHandling = () => {
     };
 
     const addEmployerConfirmed = () => {
-        setEmployees([...employees, newEmployee]);
-        handleCloseAddModal();
+        axios.post('http://localhost/Office_Management/Hadler/AccountManagement.php', newEmployee)
+            .then(response => {
+                setEmployees([...employees, newEmployee]);
+                handleCloseAddModal();
+            })
+            .catch(error => {
+                console.error('There was an error adding the employee!', error);
+            });
     };
 
     const updateEmployerConfirmed = () => {
@@ -87,25 +101,25 @@ const AccountsHandling = () => {
                             <table className="table table-bordered">
                                 <thead className="text-white" style={{backgroundColor: "#C19A6B"}}>
                                 <tr>
-                                    <th scope="col" style={{width: "12%"}}>Employee ID</th>
-                                    <th scope="col" style={{width: "20%"}}>Employee Name</th>
-                                    <th scope="col" style={{width: "20%"}}>Email</th>
-                                    <th scope="col" style={{width: "28%"}}>Address</th>
-                                    <th scope="col" style={{width: "14%"}}>Mobile Number</th>
-                                    <th scope="col" style={{width: "14%"}}>Position</th>
-                                    <th scope="col" style={{width: "20%"}}>Username</th>
-                                    <th scope="col" style={{width: "12%"}}>Password</th>
+                                    <th scope="col">Employee ID</th>
+                                    <th scope="col">Employee Name</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Address</th>
+                                    <th scope="col">Mobile Number</th>
+                                    <th scope="col">Position</th>
+                                    <th scope="col">Username</th>
+                                    <th scope="col">Password</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 {employees.map((employee, index) => (
                                     <tr key={index}>
-                                        <td>{index + 1}</td>
-                                        <td>{employee.name}</td>
+                                        <td>{employee.employee_id}</td>
+                                        <td>{employee.employee_name}</td>
                                         <td>{employee.email}</td>
                                         <td>{employee.address}</td>
-                                        <td>{employee.mobile}</td>
-                                        <td>{employee.role}</td>
+                                        <td>{employee.mobile_number}</td>
+                                        <td>{employee.position}</td>
                                         <td>{employee.username}</td>
                                         <td>{employee.password}</td>
                                     </tr>
@@ -125,8 +139,8 @@ const AccountsHandling = () => {
                                     </div>
                                     <div className="modal-body">
                                         <div className="mb-3">
-                                            <label htmlFor="name" className="form-label">Employer Name</label>
-                                            <input type="text" className="form-control" id="name" value={newEmployee.name} onChange={handleInputChange}/>
+                                            <label htmlFor="employee_name" className="form-label">Employer Name</label>
+                                            <input type="text" className="form-control" id="employee_name" value={newEmployee.employee_name} onChange={handleInputChange}/>
                                             <small className="text-danger" id="warningAddEmployer1" style={{display: 'none'}}>
                                                 Please Enter Employer Name
                                             </small>
@@ -144,126 +158,108 @@ const AccountsHandling = () => {
                                                     <label htmlFor="email" className="form-label">E-mail</label>
                                                     <input type="text" className="form-control" id="email" value={newEmployee.email} onChange={handleInputChange}/>
                                                     <small className="text-danger" id="warningAddEmployer3" style={{display: 'none'}}>
-                                                        Please Enter EPF No
+                                                        Please Enter E-mail
                                                     </small>
                                                 </div>
                                             </div>
                                             <div className="col">
                                                 <div className="mb-3">
-                                                    <label htmlFor="mobile" className="form-label">Mobile Number</label>
-                                                    <input type="number" className="form-control" id="mobile" value={newEmployee.mobile} onChange={handleInputChange}/>
+                                                    <label htmlFor="mobile_number" className="form-label">Mobile Number</label>
+                                                    <input type="text" className="form-control" id="mobile_number" value={newEmployee.mobile_number} onChange={handleInputChange}/>
                                                     <small className="text-danger" id="warningAddEmployer4" style={{display: 'none'}}>
-                                                        Please Enter Employee Number
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="row">
-                                            <div className="col">
-                                                <div className="mb-3">
-                                                    <label htmlFor="dob" className="form-label">Date of Birth</label>
-                                                    <input type="date" className="form-control" id="dob" value={newEmployee.dob} onChange={handleInputChange}/>
-                                                    <small className="text-danger" id="warningAddEmployer8" style={{display: 'none'}}>
-                                                        Please Enter Date of Birth
-                                                    </small>
-                                                </div>
-                                            </div>
-                                            <div className="col">
-                                                <div className="mb-3">
-                                                    <label htmlFor="doj" className="form-label">Joined Date</label>
-                                                    <input type="date" className="form-control" id="doj" value={newEmployee.doj} onChange={handleInputChange}/>
-                                                    <small className="text-danger" id="warningAddEmployer9" style={{display: 'none'}}>
-                                                        Please Enter Joined Date
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="row">
-                                            <div className="col-4">
-                                                <div className="mb-3">
-                                                    <label htmlFor="username" className="form-label">Username</label>
-                                                    <input type="text" className="form-control" id="username" value={newEmployee.username} onChange={handleInputChange}/>
-                                                    <small className="text-danger" id="warningAddEmployer6" style={{display: 'none'}}>
                                                         Please Enter Mobile Number
                                                     </small>
                                                 </div>
                                             </div>
-                                            <div className="col-4">
+                                        </div>
+                                        <div className="row">
+                                            <div className="col-6">
+                                                <div className="mb-3">
+                                                    <label htmlFor="username" className="form-label">Username</label>
+                                                    <input type="text" className="form-control" id="username" value={newEmployee.username} onChange={handleInputChange}/>
+                                                    <small className="text-danger" id="warningAddEmployer5" style={{display: 'none'}}>
+                                                        Please Enter Username
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div className="col-6">
                                                 <div className="mb-3">
                                                     <label htmlFor="password" className="form-label">Password</label>
                                                     <input type="password" className="form-control" id="password" value={newEmployee.password} onChange={handleInputChange}/>
-                                                    <small className="text-danger" id="warningAddEmployer7" style={{display: 'none'}}>
-                                                        Please Enter Email Address
-                                                    </small>
-                                                </div>
-                                            </div>
-                                            <div className="col-4">
-                                                <div className="mb-3">
-                                                    <label htmlFor="role" className="form-label">Role</label>
-                                                    <select className="form-select" id="role" value={newEmployee.role} onChange={handleInputChange}>
-                                                        <option value="">Select the Role</option>
-                                                        <option value="HR Manager">HR Manager</option>
-                                                        <option value="Finance Manager">Finance Manager</option>
-                                                    </select>
-                                                    <small className="text-danger" id="warningAddEmployer2" style={{display: 'none'}}>
-                                                        Please Enter Employer Address
+                                                    <small className="text-danger" id="warningAddEmployer6" style={{display: 'none'}}>
+                                                        Please Enter Password
                                                     </small>
                                                 </div>
                                             </div>
                                         </div>
+                                        <div className="row">
+                                            <div className="col-6">
+                                                <div className="mb-3">
+                                                    <label htmlFor="position" className="form-label">Role</label>
+                                                    <input type="text" className="form-control" id="position" value={newEmployee.position} onChange={handleInputChange}/>
+                                                    <small className="text-danger" id="warningAddEmployer7" style={{display: 'none'}}>
+                                                        Please Enter Role
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div className="col-6"></div>
+                                        </div>
                                     </div>
                                     <div className="modal-footer">
-                                        <button type="button" className="btn btn-danger" onClick={handleCloseAddModal}>Cancel</button>
-                                        <button type="button" className="btn btn-success" onClick={addEmployerConfirmed}>Create</button>
+                                        <button type="button" className="btn btn-secondary" onClick={handleCloseAddModal}>
+                                            Cancel
+                                        </button>
+                                        <button type="button" className="btn btn-success" onClick={addEmployerConfirmed}>
+                                            Add Account
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Update Supplier Modal */}
+                        {/* Update Employer Modal */}
                         <div className={`modal fade bd-example-modal-lg ${showUpdateModal ? "show d-block" : ""}`}
-                             tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                             tabIndex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
                             <div className="modal-dialog modal-lg">
                                 <div className="modal-content">
                                     <div className="modal-header">
-                                        <h4 className="modal-title fs-5" id="staticBackdropLabel">Update Supplier</h4>
+                                        <h4 className="modal-title fs-5" id="staticBackdropLabel">Update Account</h4>
                                         <button type="button" className="btn-close" onClick={handleCloseUpdateModal}></button>
                                     </div>
                                     <div className="modal-body">
-                                        {/* Update Supplier form fields */}
-                                        <div className="mb-3">
-                                            <label htmlFor="nameuID" className="form-label">Supplier Name</label>
-                                            <input type="text" className="form-control" id="nameuID" name="nameu"/>
-                                        </div>
-                                        <div className="mb-3">
-                                            <label htmlFor="addressuID" className="form-label">Address</label>
-                                            <input type="text" className="form-control" id="addressuID" name="addressu"/>
-                                        </div>
-                                        {/* Add other fields as needed */}
+                                        {/* Update Employer Form */}
                                     </div>
                                     <div className="modal-footer">
-                                        <button type="button" className="btn btn-danger" onClick={handleCloseUpdateModal}>Cancel</button>
-                                        <button type="button" className="btn btn-success" onClick={updateEmployerConfirmed}>Update Supplier</button>
+                                        <button type="button" className="btn btn-secondary" onClick={handleCloseUpdateModal}>
+                                            Cancel
+                                        </button>
+                                        <button type="button" className="btn btn-success" onClick={updateEmployerConfirmed}>
+                                            Update Account
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Delete Supplier Modal */}
-                        <div className={`modal fade ${showDeleteModal ? "show d-block" : ""}`} tabindex="-1"
-                             role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                            <div className="modal-dialog">
+                        {/* Delete Employer Modal */}
+                        <div className={`modal fade ${showDeleteModal ? "show d-block" : ""}`} tabIndex="-1"
+                             role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div className="modal-dialog" role="document">
                                 <div className="modal-content">
                                     <div className="modal-header">
-                                        <h4 className="modal-title fs-5" id="staticBackdropLabel">Delete Supplier</h4>
+                                        <h5 className="modal-title" id="exampleModalLabel">Delete Confirmation</h5>
                                         <button type="button" className="btn-close" onClick={handleCloseDeleteModal}></button>
                                     </div>
                                     <div className="modal-body">
-                                        Are you sure want to delete this Supplier?
+                                        Are you sure you want to delete this employee?
                                     </div>
                                     <div className="modal-footer">
-                                        <button type="button" className="btn btn-success" onClick={handleCloseDeleteModal}>No</button>
-                                        <button type="button" className="btn btn-danger" onClick={deleteEmployerConfirmed}>Yes, Delete</button>
+                                        <button type="button" className="btn btn-secondary" onClick={handleCloseDeleteModal}>
+                                            Cancel
+                                        </button>
+                                        <button type="button" className="btn btn-danger" onClick={deleteEmployerConfirmed}>
+                                            Delete
+                                        </button>
                                     </div>
                                 </div>
                             </div>

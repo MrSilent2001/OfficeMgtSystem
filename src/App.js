@@ -1,4 +1,5 @@
 import './App.css';
+import React from 'react';
 import AdminDashboard from "./pages/Admin View/adminDashboard";
 import {Route, Routes} from "react-router-dom";
 import AttendanceMgt from "./pages/Admin View/EmployeeMgt";
