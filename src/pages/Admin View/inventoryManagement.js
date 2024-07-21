@@ -85,7 +85,7 @@ const InventoryManagement = () => {
                         <div className="col-10" style={{width: "78vw"}}>
                             <div className="row my-4">
                                 <div className="col">
-                                    <h6 className="text-secondary my-2">Office Management > Supplier Management</h6>
+                                    <h6 className="text-secondary my-2">Office Management > Inventory Management</h6>
                                 </div>
                                 <div className="col text-end">
                                     <button type="button" className="btn btn-success" onClick={handleShowAddModal}>

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../office-mgt-system.iml" filepath="$PROJECT_DIR$/../office-mgt-system.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/OfficeMgtSystem.iml" filepath="$PROJECT_DIR$/.idea/OfficeMgtSystem.iml" />
     </modules>
   </component>
 </project>

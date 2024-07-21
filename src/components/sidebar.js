@@ -8,7 +8,6 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
     const [userRole, setUserRole] = useState('');
 
     useEffect(() => {
-        // Fetch user role from an API or local storage
         const role = localStorage.getItem('role');
         setUserRole(role);
         console.log(userRole)
@@ -16,7 +15,7 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
 
     return (
         <aside id="sidebar" className={openSidebarToggle ? "sidebar-responsive" : ""}>
-            <div className='sidebar-title' onClick={() => navigate('/admin-dashboard')} style={{ cursor: 'pointer' }}>
+            <div className='sidebar-title' onClick={() => navigate('/accounts-handling')} style={{ cursor: 'pointer' }}>
                 <div className='sidebar-brand'>
                     <img src='/Logo.png' alt='' className='icon_header' /> Ru Fashion
                 </div>
@@ -43,13 +42,13 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
 
                 {userRole === 'HRManager' && (
                     <>
-                        <li className='sidebar-list-item' onClick={() => navigate('/hr-dashboard')}>
+                        <li className='sidebar-list-item' onClick={() => navigate('/accounts-handling')}>
                             <BsPeopleFill className='icon'/> Account Handling
                         </li>
-                        <li className='sidebar-list-item' onClick={() => navigate('/hr-order-controlling')}>
+                        <li className='sidebar-list-item' onClick={() => navigate('/order-controlling')}>
                             <BsPeopleFill className='icon'/> Order Controlling
                         </li>
-                        <li className='sidebar-list-item' onClick={() => navigate('/hr-sales-mgt')}>
+                        <li className='sidebar-list-item' onClick={() => navigate('/sales-mgt')}>
                             <BsPeopleFill className='icon'/> Sales Management
                         </li>
                     </>
@@ -57,13 +56,13 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
 
                 {userRole === 'FinanceManager' && (
                     <>
-                        <li className='sidebar-list-item' onClick={() => navigate('/finance-dashboard')}>
+                        <li className='sidebar-list-item' onClick={() => navigate('/accounts-handling')}>
                             <BsPeopleFill className='icon'/> Account Handling
                         </li>
-                        <li className='sidebar-list-item' onClick={() => navigate('/finance-order-controlling')}>
+                        <li className='sidebar-list-item' onClick={() => navigate('/order-controlling')}>
                             <BsPeopleFill className='icon'/> Order Management
                         </li>
-                        <li className='sidebar-list-item' onClick={() => navigate('/finance-sales-mgt')}>
+                        <li className='sidebar-list-item' onClick={() => navigate('/sales-mgt')}>
                             <BsPeopleFill className='icon'/> Sales Management
                         </li>
                         <li className='sidebar-list-item' onClick={() => navigate('/finance-inventory-mgt')}>

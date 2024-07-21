@@ -40,7 +40,7 @@ const FinanceSalesMgt = () => {
             quantity: '',
             price: '',
             date: '',
-            status: 'Pending' // Reset to default status
+            status: 'Pending'
         });
         closeAddSalesModal();
     };
