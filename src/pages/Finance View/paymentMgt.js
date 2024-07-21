@@ -15,8 +15,9 @@ const PaymentMgt = () => {
 
     const fetchPayments = async () => {
         try {
-            const response = await axios.get('http://localhost/Office_Management/Handler/PaymentManagement.php');
+            const response = await axios.get('http://localhost/Office_Management/Hadler/PaymentsManagement.php');
             setPayments(response.data.data); // Ensure you're accessing the 'data' property correctly
+            console.log('Payment Management', response.data);
         } catch (error) {
             console.error("There was an error fetching the payments!", error);
         }

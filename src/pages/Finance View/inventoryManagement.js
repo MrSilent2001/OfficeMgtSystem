@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import "../styleSheets/adminDashboard.css";
 import '../../App.css';
 import Header from "../../components/header";
@@ -19,9 +20,23 @@ const InventoryManagement = () => {
         manufacturedDate: ''
     });
 
-    const OpenSidebar = () => {
+    const toggleSidebar = () => {
         setOpenSidebarToggle(!openSidebarToggle);
     };
+
+    const fetchSuppliers = async () => {
+        try {
+            const response = await axios.get('http://localhost/Office_Management/Hadler/SupplierManagement.php');
+            setSuppliers(response.data.data);
+            console.log('Inventory Management', response.data);
+        } catch (error) {
+            console.error("There was an error fetching the suppliers!", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchSuppliers();
+    }, []);
 
     const handleShowAddModal = () => setShowAddModal(true);
     const handleCloseAddModal = () => {
@@ -62,8 +77,8 @@ const InventoryManagement = () => {
 
     return (
         <div className='grid-container'>
-            <Header OpenSidebar={OpenSidebar}/>
-            <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}/>
+            <Header OpenSidebar={toggleSidebar} />
+            <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={toggleSidebar} />
             <main className='main-container'>
                 <div className='main-title'>
                     <div className="row" style={{marginRight: "1%"}}>
@@ -92,8 +107,8 @@ const InventoryManagement = () => {
                                 <tbody>
                                 {suppliers.map((supplier, index) => (
                                     <tr key={index}>
-                                        <td>{supplier.itemId}</td>
-                                        <td>{supplier.itemName}</td>
+                                        <td>{supplier.item_id}</td>
+                                        <td>{supplier.item_name}</td>
                                         <td>{supplier.qty}</td>
                                         <td>{supplier.price}</td>
                                         <td>{supplier.supplier}</td>
