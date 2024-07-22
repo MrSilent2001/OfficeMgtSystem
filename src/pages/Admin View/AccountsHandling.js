@@ -18,24 +18,40 @@ const AccountsHandling = () => {
         mobile_number: '',
         username: '',
         password: '',
-        position: '',
         name: '',
         mobile: '',
         dob: '',
         doj: '',
-        role: ''
+        position: '',
+        NIC: '',
+        mobileNumber: '',
+        epfNo: '',
+        empNo: '',
     });
     const [selectedEmployee, setSelectedEmployee] = useState(null);
 
     useEffect(() => {
-        // Fetch employees data from the backend
-        axios.get('http://localhost/Office_Management/Hadler/AccountManagement.php')
-            .then(response => {
-                setEmployees(response.data.data); // Adjust this based on your PHP response structure
-            })
-            .catch(error => {
-                console.error('There was an error fetching the employees data!', error);
-            });
+        const role = localStorage.getItem('role');
+        setUserRole(role);
+        if (role === 'HRManager') {
+            // Fetch employees data from the HR specific backend
+            axios.get('http://localhost/Office_Management/Hadler/employeeManagement.php')
+                .then(response => {
+                    setEmployees(response.data.data);
+                })
+                .catch(error => {
+                    console.error('There was an error fetching the HR employees data!', error);
+                });
+        } else {
+            // Fetch employees data from the general backend
+            axios.get('http://localhost/Office_Management/Hadler/AccountManagement.php')
+                .then(response => {
+                    setEmployees(response.data.data);
+                })
+                .catch(error => {
+                    console.error('There was an error fetching the employees data!', error);
+                });
+        }
     }, []);
 
     const OpenSidebar = () => {
@@ -52,12 +68,15 @@ const AccountsHandling = () => {
             mobile_number: '',
             username: '',
             password: '',
-            position: '',
             name: '',
             mobile: '',
             dob: '',
             doj: '',
-            role: ''
+            position: '',
+            NIC: '',
+            mobileNumber: '',
+            epfNo: '',
+            empNo: '',
         });
     };
 
@@ -75,9 +94,13 @@ const AccountsHandling = () => {
     };
 
     const addEmployerConfirmed = () => {
-        axios.post('http://localhost/Office_Management/Hadler/AccountManagement.php', newEmployee)
+        const endpoint = userRole === 'HRManager'
+            ? 'http://localhost/Office_Management/Hadler/employeeManagement.php'
+            : 'http://localhost/Office_Management/Hadler/AccountManagement.php';
+
+        axios.post(endpoint, newEmployee)
             .then(response => {
-                const addedEmployee = {...newEmployee, employee_id: response.data.employee_id};
+                const addedEmployee = { ...newEmployee, employee_id: response.data.employee_id };
                 setEmployees([...employees, addedEmployee]);
                 handleCloseAddModal();
             })
@@ -87,7 +110,18 @@ const AccountsHandling = () => {
     };
 
     const updateEmployerConfirmed = () => {
+        const endpoint = userRole === 'HRManager'
+            ? 'http://localhost/Office_Management/Hadler/employeeManagement.php'
+            : 'http://localhost/Office_Management/Hadler/AccountManagement.php';
 
+        axios.put(endpoint, selectedEmployee)
+            .then(response => {
+                setEmployees(employees.map(emp => (emp.employee_id === selectedEmployee.employee_id ? selectedEmployee : emp)));
+                handleCloseUpdateModal();
+            })
+            .catch(error => {
+                console.error('There was an error updating the employee!', error);
+            });
     };
 
     const handleRowClick = (employee) => {
@@ -133,7 +167,7 @@ const AccountsHandling = () => {
                                         <th scope="col">Email</th>
                                         <th scope="col">Address</th>
                                         <th scope="col">Mobile Number</th>
-                                        <th scope="col">Position</th>
+                                        <th scope="col">Designation</th>
                                         <th scope="col">Username</th>
                                         <th scope="col">Password</th>
                                     </tr>
@@ -143,10 +177,9 @@ const AccountsHandling = () => {
                                         <th scope="col" style={{width: "20%"}}>Employee Name</th>
                                         <th scope="col" style={{width: "20%"}}>Email</th>
                                         <th scope="col" style={{width: "28%"}}>Address</th>
-                                        <th scope="col" style={{width: "14%"}}>Mobile Number</th>
-                                        <th scope="col" style={{width: "14%"}}>Position</th>
-                                        <th scope="col" style={{width: "20%"}}>Username</th>
-                                        <th scope="col" style={{width: "12%"}}>Password</th>
+                                        <th scope="col" style={{width: "14%"}}>NIC</th>
+                                        <th scope="col" style={{width: "20%"}}>EPF No</th>
+                                        <th scope="col" style={{width: "12%"}}>Date Joined</th>
                                     </tr>
                                 ) : (
                                     <tr>
@@ -168,7 +201,7 @@ const AccountsHandling = () => {
                                             <td>{employee.email}</td>
                                             <td>{employee.address}</td>
                                             <td>{employee.mobile_number}</td>
-                                            <td>{employee.position}</td>
+                                            <td>{employee.position === '0' ? 'Finance Manager' : 'HR Manager'}</td>
                                             <td>{employee.username}</td>
                                             <td>{employee.password}</td>
                                         </tr>
@@ -182,10 +215,9 @@ const AccountsHandling = () => {
                                             <td>{employee.name}</td>
                                             <td>{employee.email}</td>
                                             <td>{employee.address}</td>
-                                            <td>{employee.mobile}</td>
-                                            <td>{employee.role}</td>
-                                            <td>{employee.username}</td>
-                                            <td>{employee.password}</td>
+                                            <td>{employee.NIC}</td>
+                                            <td>{employee.epfNo}</td>
+                                            <td>{employee.doj}</td>
                                         </tr>
                                     ))}
                                     </tbody>
@@ -219,53 +251,81 @@ const AccountsHandling = () => {
                                     </div>
                                     <div className="modal-body">
                                         <div className="mb-3">
-                                            {userRole === 'Admin' || 'HRManager' ? (
-                                                <label htmlFor="employee_name" className="form-label">Employer
-                                                    Name</label>
+                                            {userRole === 'Admin' ? (
+                                                <>
+                                                    <label htmlFor="employee_name_admin" className="form-label">Employer
+                                                        Name</label>
+                                                    <input type="text" className="form-control" id="employee_name"
+                                                           value={newEmployee.employee_name || ''}
+                                                           onChange={handleInputChange}/>
+                                                    <small className="text-danger" id="warningAddEmployer11"
+                                                           style={{display: 'none'}}>
+                                                        Please Enter Employer Name
+                                                    </small>
+                                                </>
+                                            ) : userRole === 'HRManager' ? (
+                                                <>
+                                                    <label htmlFor="employee_name_hr" className="form-label">Employee
+                                                        Name</label>
+                                                    <input type="text" className="form-control" id="name"
+                                                           value={newEmployee.name || ''}
+                                                           onChange={handleInputChange}/>
+                                                    <small className="text-danger" id="warningAddEmployer111"
+                                                           style={{display: 'none'}}>
+                                                        Please Enter Employee Name
+                                                    </small>
+                                                </>
                                             ) : (
-                                                <label htmlFor="name" className="form-label">Supplier Name</label>
+                                                <>
+                                                    <label htmlFor="employee_name_supplier" className="form-label">Supplier
+                                                        Name</label>
+                                                    <input type="text" className="form-control"
+                                                           id="employee_name"
+                                                           value={newEmployee.employee_name || ''}
+                                                           onChange={handleInputChange}/>
+                                                    <small className="text-danger" id="warningAddEmployer1111"
+                                                           style={{display: 'none'}}>
+                                                        Please Enter Supplier Name
+                                                    </small>
+                                                </>
                                             )}
-                                            <input type="text" className="form-control" id="employee_name"
-                                                   value={newEmployee.employee_name} onChange={handleInputChange}/>
-                                            <small className="text-danger" id="warningAddEmployer1"
-                                                   style={{display: 'none'}}>
-                                                Please Enter Employer Name
-                                            </small>
+                                        </div>
+
+                                        <div className="mb-3">
+                                        <label htmlFor="address" className="form-label">Address</label>
+                                        <input type="text" className="form-control" id="address"
+                                               value={newEmployee.address} onChange={handleInputChange}/>
+                                        <small className="text-danger" id="warningAddEmployer2"
+                                               style={{display: 'none'}}>
+                                            Please Enter Employer Address
+                                        </small>
+                                    </div>
+                                    <div className="row">
+                                        <div className="col">
+                                            <div className="mb-3">
+                                                <label htmlFor="email" className="form-label">E-mail</label>
+                                                <input type="text" className="form-control" id="email"
+                                                       value={newEmployee.email} onChange={handleInputChange}/>
+                                                <small className="text-danger" id="warningAddEmployer3"
+                                                       style={{display: 'none'}}>
+                                                    Please Enter E-mail
+                                                </small>
+                                            </div>
                                         </div>
                                         <div className="mb-3">
-                                            <label htmlFor="address" className="form-label">Address</label>
-                                            <input type="text" className="form-control" id="address"
-                                                   value={newEmployee.address} onChange={handleInputChange}/>
-                                            <small className="text-danger" id="warningAddEmployer2"
-                                                   style={{display: 'none'}}>
-                                                Please Enter Employer Address
-                                            </small>
-                                        </div>
-                                        <div className="row">
-                                            <div className="col">
-                                                <div className="mb-3">
-                                                    <label htmlFor="email" className="form-label">E-mail</label>
-                                                    <input type="text" className="form-control" id="email"
-                                                           value={newEmployee.email} onChange={handleInputChange}/>
-                                                    <small className="text-danger" id="warningAddEmployer3"
-                                                           style={{display: 'none'}}>
-                                                        Please Enter E-mail
-                                                    </small>
-                                                </div>
-                                            </div>
-                                            <div className="mb-3">
-                                                <label htmlFor="mobile_number" className="form-label">Mobile
-                                                    Number</label>
-                                                <input type="text" className="form-control" id="mobile_number"
-                                                       value={newEmployee.mobile_number}
-                                                       onChange={handleInputChange}/>
-                                                <small className="text-danger" id="warningAddEmployer4"
+                                            <label htmlFor="mobile_number" className="form-label">Mobile
+                                                Number</label>
+                                            <input type="text" className="form-control" id="mobile_number"
+                                                   value={newEmployee.mobile_number}
+                                                   onChange={handleInputChange}/>
+                                            <small className="text-danger" id="warningAddEmployer4"
                                                        style={{display: 'none'}}>
                                                     Please Enter Mobile Number
                                                 </small>
                                             </div>
                                         </div>
 
+                                        {userRole === 'Admin' ? (
                                         <div className="row">
                                             <div className="col-6">
                                                 <div className="mb-3">
@@ -290,6 +350,8 @@ const AccountsHandling = () => {
                                                 </div>
                                             </div>
                                         </div>
+                                        ) : null}
+
                                         {userRole === 'FinanceManager' || 'HRManager' ? (
                                             <div className="row">
                                                 <div className="col-6">
@@ -321,13 +383,13 @@ const AccountsHandling = () => {
                                             </div>
                                         ) : null}
 
+                                        {userRole === 'Admin' ? (
                                         <div className="row">
                                             <div className="col-6">
                                                 <div className="mb-3">
                                                     <label htmlFor="role" className="form-label">Designation</label>
-                                                    <select className="form-select" id="role" value={newEmployee.role}
+                                                    <select className="form-select" id="position" value={newEmployee.position}
                                                             onChange={handleInputChange}>
-                                                        <option value="2">Staff</option>
                                                         <option value="1">HR Manager</option>
                                                         <option value="0">Finance Manager</option>
                                                     </select>
@@ -339,6 +401,34 @@ const AccountsHandling = () => {
                                             </div>
                                             <div className="col-6"></div>
                                         </div>
+                                        ) : (
+                                            <div className="row">
+                                                <div className="col-6">
+                                                    <div className="mb-3">
+                                                        <label htmlFor="role" className="form-label">EPF No.</label>
+                                                        <input type="number" className="form-control" id="epfNo"
+                                                               value={newEmployee.epfNo}
+                                                               onChange={handleInputChange}/>
+                                                        <small className="text-danger" id="warningAddEmployer10"
+                                                               style={{display: 'none'}}>
+                                                            Please Enter Role
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                                <div className="col-6">
+                                                    <div className="mb-3">
+                                                        <label htmlFor="role" className="form-label">NIC</label>
+                                                        <input type="number" className="form-control" id="NIC"
+                                                               value={newEmployee.NIC}
+                                                               onChange={handleInputChange}/>
+                                                        <small className="text-danger" id="warningAddEmployer11"
+                                                               style={{display: 'none'}}>
+                                                            Please Enter Role
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="modal-footer">
                                         <button type="button" className="btn btn-secondary"
@@ -355,90 +445,90 @@ const AccountsHandling = () => {
                         </div>
 
                         {/* Update Employer Modal */}
-                        {/*<div className={`modal fade bd-example-modal-lg ${showUpdateModal ? "show d-block" : ""}`}*/}
-                        {/*     tabIndex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">*/}
-                        {/*    <div className="modal-dialog modal-lg">*/}
-                        {/*        <div className="modal-content">*/}
-                        {/*            <div className="modal-header">*/}
-                        {/*                <h4 className="modal-title fs-5" id="staticBackdropLabel">Update Account</h4>*/}
-                        {/*                <button type="button" className="btn-close"*/}
-                        {/*                        onClick={handleCloseUpdateModal}></button>*/}
-                        {/*            </div>*/}
-                        {/*            <div className="modal-body">*/}
-                        {/*                {selectedEmployee && (*/}
-                        {/*                    <>*/}
-                        {/*                        <div className="mb-3">*/}
-                        {/*                            <label htmlFor="employee_name" className="form-label">Employer Name</label>*/}
-                        {/*                            <input type="text" className="form-control" id="employee_name"*/}
-                        {/*                                   value={selectedEmployee.employee_name} onChange={handleUpdateInputChange}/>*/}
-                        {/*                        </div>*/}
-                        {/*                        <div className="mb-3">*/}
-                        {/*                            <label htmlFor="address" className="form-label">Address</label>*/}
-                        {/*                            <input type="text" className="form-control" id="address"*/}
-                        {/*                                   value={selectedEmployee.address} onChange={handleUpdateInputChange}/>*/}
-                        {/*                        </div>*/}
-                        {/*                        <div className="row">*/}
-                        {/*                            <div className="col">*/}
-                        {/*                                <div className="mb-3">*/}
-                        {/*                                    <label htmlFor="email" className="form-label">E-mail</label>*/}
-                        {/*                                    <input type="text" className="form-control" id="email"*/}
-                        {/*                                           value={selectedEmployee.email} onChange={handleUpdateInputChange}/>*/}
-                        {/*                                </div>*/}
-                        {/*                            </div>*/}
-                        {/*                            <div className="col">*/}
-                        {/*                                <div className="mb-3">*/}
-                        {/*                                    <label htmlFor="mobile_number" className="form-label">Mobile Number</label>*/}
-                        {/*                                    <input type="text" className="form-control" id="mobile_number"*/}
-                        {/*                                           value={selectedEmployee.mobile_number} onChange={handleUpdateInputChange}/>*/}
-                        {/*                                </div>*/}
-                        {/*                            </div>*/}
-                        {/*                        </div>*/}
-                        {/*                        <div className="row">*/}
-                        {/*                            <div className="col-6">*/}
-                        {/*                                <div className="mb-3">*/}
-                        {/*                                    <label htmlFor="username" className="form-label">Username</label>*/}
-                        {/*                                    <input type="text" className="form-control" id="username"*/}
-                        {/*                                           value={selectedEmployee.username} onChange={handleUpdateInputChange}/>*/}
-                        {/*                                </div>*/}
-                        {/*                            </div>*/}
-                        {/*                            <div className="col-6">*/}
-                        {/*                                <div className="mb-3">*/}
-                        {/*                                    <label htmlFor="password" className="form-label">Password</label>*/}
-                        {/*                                    <input type="password" className="form-control" id="password"*/}
-                        {/*                                           value={selectedEmployee.password} onChange={handleUpdateInputChange}/>*/}
-                        {/*                                </div>*/}
-                        {/*                            </div>*/}
-                        {/*                        </div>*/}
-                        {/*                        <div className="row">*/}
-                        {/*                            <div className="col-6">*/}
-                        {/*                                <div className="mb-3">*/}
-                        {/*                                    <label htmlFor="role" className="form-label">Designation</label>*/}
-                        {/*                                    <select className="form-select" id="role" value={selectedEmployee.role}*/}
-                        {/*                                            onChange={handleUpdateInputChange}>*/}
-                        {/*                                        <option value="2">Staff</option>*/}
-                        {/*                                        <option value="1">HR Manager</option>*/}
-                        {/*                                        <option value="0">Finance Manager</option>*/}
-                        {/*                                    </select>*/}
-                        {/*                                </div>*/}
-                        {/*                            </div>*/}
-                        {/*                            <div className="col-6"></div>*/}
-                        {/*                        </div>*/}
-                        {/*                    </>*/}
-                        {/*                )}*/}
-                        {/*            </div>*/}
-                        {/*            <div className="modal-footer">*/}
-                        {/*                <button type="button" className="btn btn-secondary"*/}
-                        {/*                        onClick={handleCloseUpdateModal}>*/}
-                        {/*                    Cancel*/}
-                        {/*                </button>*/}
-                        {/*                <button type="button" className="btn btn-success"*/}
-                        {/*                        onClick={updateEmployerConfirmed}>*/}
-                        {/*                    Update Account*/}
-                        {/*                </button>*/}
-                        {/*            </div>*/}
-                        {/*        </div>*/}
-                        {/*    </div>*/}
-                        {/*</div>*/}
+                        <div className={`modal fade bd-example-modal-lg ${showUpdateModal ? "show d-block" : ""}`}
+                             tabIndex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                            <div className="modal-dialog modal-lg">
+                                <div className="modal-content">
+                                    <div className="modal-header">
+                                    <h4 className="modal-title fs-5" id="staticBackdropLabel">Update Account</h4>
+                                        <button type="button" className="btn-close"
+                                                onClick={handleCloseUpdateModal}></button>
+                                    </div>
+                                    <div className="modal-body">
+                                        {selectedEmployee && (
+                                            <>
+                                                <div className="mb-3">
+                                                    <label htmlFor="employee_name" className="form-label">Employer Name</label>
+                                                    <input type="text" className="form-control" id="employee_name"
+                                                           value={selectedEmployee.employee_name} onChange={handleUpdateInputChange}/>
+                                                </div>
+                                                <div className="mb-3">
+                                                    <label htmlFor="address" className="form-label">Address</label>
+                                                    <input type="text" className="form-control" id="address"
+                                                           value={selectedEmployee.address} onChange={handleUpdateInputChange}/>
+                                                </div>
+                                                <div className="row">
+                                                    <div className="col">
+                                                        <div className="mb-3">
+                                                            <label htmlFor="email" className="form-label">E-mail</label>
+                                                            <input type="text" className="form-control" id="email"
+                                                                   value={selectedEmployee.email} onChange={handleUpdateInputChange}/>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col">
+                                                        <div className="mb-3">
+                                                            <label htmlFor="mobile_number" className="form-label">Mobile Number</label>
+                                                            <input type="text" className="form-control" id="mobile_number"
+                                                                   value={selectedEmployee.mobile_number} onChange={handleUpdateInputChange}/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="row">
+                                                    <div className="col-6">
+                                                        <div className="mb-3">
+                                                            <label htmlFor="username" className="form-label">Username</label>
+                                                            <input type="text" className="form-control" id="username"
+                                                                   value={selectedEmployee.username} onChange={handleUpdateInputChange}/>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-6">
+                                                        <div className="mb-3">
+                                                            <label htmlFor="password" className="form-label">Password</label>
+                                                            <input type="password" className="form-control" id="password"
+                                                                   value={selectedEmployee.password} onChange={handleUpdateInputChange}/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="row">
+                                                    <div className="col-6">
+                                                        <div className="mb-3">
+                                                            <label htmlFor="role" className="form-label">Designation</label>
+                                                            <select className="form-select" id="role" value={selectedEmployee.role}
+                                                                    onChange={handleUpdateInputChange}>
+                                                                <option value="2">Staff</option>
+                                                                <option value="1">HR Manager</option>
+                                                                <option value="0">Finance Manager</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-6"></div>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                    <div className="modal-footer">
+                                        <button type="button" className="btn btn-secondary"
+                                                onClick={handleCloseUpdateModal}>
+                                            Cancel
+                                        </button>
+                                        <button type="button" className="btn btn-success"
+                                                onClick={updateEmployerConfirmed}>
+                                            Update Account
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
                 </div>

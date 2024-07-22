@@ -9,6 +9,7 @@ const EmployeeMgt = () => {
     const [openSidebarToggle, setOpenSidebarToggle] = useState(false);
     const [employees, setEmployees] = useState([]);
     const [showModal, setShowModal] = useState(false);
+    const [userRole, setUserRole] = useState('');
     const [newEmployee, setNewEmployee] = useState({
         NIC: '',
         name: '',
@@ -85,6 +86,12 @@ const EmployeeMgt = () => {
         }
     };
 
+    useEffect(() => {
+        const role = localStorage.getItem('role');
+        setUserRole(role);
+        console.log(userRole)
+    }, []);
+
     return (
         <div className='grid-container'>
             <Header openSidebar={openSidebar} />
@@ -97,9 +104,11 @@ const EmployeeMgt = () => {
                                 <div className="col">
                                     <h6 className="text-secondary my-2">Office Management > Employee Management</h6>
                                 </div>
+                                {userRole === 'HRManager' ? (
                                 <div className="col text-end">
                                     <button type="button" className="btn btn-success" onClick={() => setShowModal(true)}>+ Add Employee</button>
                                 </div>
+                                ) : null }
                             </div>
                             <table className="table table-bordered">
                                 <thead className="text-white" style={{ backgroundColor: "#C19A6B" }}>
@@ -108,7 +117,6 @@ const EmployeeMgt = () => {
                                     <th scope="col">Employee Name</th>
                                     <th scope="col">Email</th>
                                     <th scope="col">Address</th>
-                                    <th scope="col">Mobile Number</th>
                                     <th scope="col">EPF No</th>
                                     <th scope="col">Date of Birth</th>
                                     <th scope="col">Date of Joining</th>
@@ -121,7 +129,6 @@ const EmployeeMgt = () => {
                                         <td>{employee.name}</td>
                                         <td>{employee.email}</td>
                                         <td>{employee.address}</td>
-                                        <td>{employee.mobileNumber}</td>
                                         <td>{employee.epfNo}</td>
                                         <td>{employee.dob}</td>
                                         <td>{employee.doj}</td>
