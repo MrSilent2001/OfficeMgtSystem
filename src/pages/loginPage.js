@@ -31,7 +31,17 @@ const LoginPage = () => {
 
                 // Navigate to different dashboards based on role
                 if (values.username === 'admin' && values.password === 'admin') {
-                    navigate('/accounts-handling');
+                    switch(values.role) {
+                        case 'FinanceManager':
+                            navigate('/finance-wage-mgt');
+                            break;
+                        case 'Admin':
+                        case 'HRManager':
+                            navigate('/accounts-handling');
+                            break;
+                        default:
+                            console.error('Invalid role');
+                    }
                 } else {
                     console.error('Invalid username or password');
                 }

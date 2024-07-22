@@ -8,6 +8,7 @@ import LoginPage from "./pages/loginPage";
 import AccountsHandling from "./pages/Admin View/AccountsHandling";
 import InventoryManagement from "./pages/Admin View/inventoryManagement";
 import PaymentMgt from "./pages/Admin View/paymentMgt";
+import ReportGeneration from "./pages/Admin View/ReportGeneration";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/sales-mgt" element={<SalesMgt />} />
         <Route path="/finance-wage-mgt" element={<PaymentMgt />} />
         <Route path="/finance-inventory-mgt" element={<InventoryManagement />} />
+        <Route path="/finance-reports" element={<ReportGeneration />} />
 
     </Routes>
   );

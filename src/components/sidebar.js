@@ -56,20 +56,14 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
 
                 {userRole === 'FinanceManager' && (
                     <>
-                        <li className='sidebar-list-item' onClick={() => navigate('/accounts-handling')}>
-                            <BsPeopleFill className='icon'/> Account Handling
-                        </li>
-                        <li className='sidebar-list-item' onClick={() => navigate('/order-controlling')}>
-                            <BsPeopleFill className='icon'/> Order Management
-                        </li>
-                        <li className='sidebar-list-item' onClick={() => navigate('/sales-mgt')}>
-                            <BsPeopleFill className='icon'/> Sales Management
-                        </li>
                         <li className='sidebar-list-item' onClick={() => navigate('/finance-inventory-mgt')}>
                             <BsPeopleFill className='icon'/> Inventory Management
                         </li>
                         <li className='sidebar-list-item' onClick={() => navigate('/finance-wage-mgt')}>
                             <BsPeopleFill className='icon'/> Payment Management
+                        </li>
+                        <li className='sidebar-list-item' onClick={() => navigate('/finance-reports')}>
+                            <BsPeopleFill className='icon'/> Report Generation
                         </li>
                     </>
                 )}
