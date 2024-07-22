@@ -12,8 +12,8 @@ const InventoryManagement = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [suppliers, setSuppliers] = useState([]);
     const [newSupplier, setNewSupplier] = useState({
-        itemId: '',
-        itemName: '',
+        item_id: '',
+        item_name: '',
         qty: '',
         price: '',
         supplier: '',
@@ -42,8 +42,8 @@ const InventoryManagement = () => {
     const handleCloseAddModal = () => {
         setShowAddModal(false);
         setNewSupplier({
-            itemId: '',
-            itemName: '',
+            item_id: '',
+            item_name: '',
             qty: '',
             price: '',
             supplier: '',
@@ -62,9 +62,15 @@ const InventoryManagement = () => {
         setNewSupplier({ ...newSupplier, [id]: value });
     };
 
-    const addSupplierConfirmed = () => {
-        setSuppliers([...suppliers, newSupplier]);
-        handleCloseAddModal();
+    const addSupplierConfirmed = async () => {
+        try {
+            const response = await axios.post('http://localhost/Office_Management/Hadler/SupplierManagement.php', newSupplier);
+            setSuppliers([...suppliers, response.data]);
+            fetchSuppliers();
+            handleCloseAddModal();
+        } catch (error) {
+            console.error("There was an error adding the supplier!", error);
+        }
     };
 
     const updateSupplierConfirmed = () => {
@@ -96,12 +102,12 @@ const InventoryManagement = () => {
                             <table className="table table-bordered">
                                 <thead className="text-white" style={{backgroundColor: "#C19A6B"}}>
                                 <tr>
-                                    <th scope="col" style={{width: "12%"}}>Item ID</th>
+                                    <th scope="col" style={{width: "10%"}}>Item ID</th>
                                     <th scope="col" style={{width: "20%"}}>Item Name</th>
-                                    <th scope="col" style={{width: "28%"}}>Qty</th>
-                                    <th scope="col" style={{width: "14%"}}>Price</th>
-                                    <th scope="col" style={{width: "14%"}}>Supplier</th>
-                                    <th scope="col" style={{width: "12%"}}></th>
+                                    <th scope="col" style={{width: "15%"}}>Qty</th>
+                                    <th scope="col" style={{width: "10%"}}>Price</th>
+                                    <th scope="col" style={{width: "20%"}}>Supplier</th>
+                                    <th scope="col" style={{width: "10%"}}></th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -114,6 +120,14 @@ const InventoryManagement = () => {
                                         <td>{supplier.supplier}</td>
                                         <td>
                                             {/* Add Update and Delete button handlers here */}
+                                            <button type="button" className="btn btn-primary"
+                                                    onClick={handleShowUpdateModal}>Update
+                                            </button>
+                                            <br/><br/>
+                                            <button type="button" className="btn btn-danger"
+                                                    onClick={handleShowDeleteModal}>Delete
+                                            </button>
+                                            <br/><br/>
                                         </td>
                                     </tr>
                                 ))}
@@ -132,15 +146,15 @@ const InventoryManagement = () => {
                                     </div>
                                     <div className="modal-body">
                                         <div className="mb-3">
-                                            <label htmlFor="itemId" className="form-label">Item ID</label>
-                                            <input type="text" className="form-control" id="itemId" value={newSupplier.itemId} onChange={handleInputChange}/>
+                                            <label htmlFor="item_id" className="form-label">Item ID</label>
+                                            <input type="text" className="form-control" id="item_id" value={newSupplier.item_id} onChange={handleInputChange}/>
                                             <small className="text-danger" id="warningAddEmployer1" style={{display: 'none'}}>
                                                 Please Enter Item ID
                                             </small>
                                         </div>
                                         <div className="mb-3">
-                                            <label htmlFor="itemName" className="form-label">Item Name</label>
-                                            <input type="text" className="form-control" id="itemName" value={newSupplier.itemName} onChange={handleInputChange}/>
+                                            <label htmlFor="item_name" className="form-label">Item Name</label>
+                                            <input type="text" className="form-control" id="item_name" value={newSupplier.item_name} onChange={handleInputChange}/>
                                             <small className="text-danger" id="warningAddEmployer2" style={{display: 'none'}}>
                                                 Please Enter Item Name
                                             </small>
